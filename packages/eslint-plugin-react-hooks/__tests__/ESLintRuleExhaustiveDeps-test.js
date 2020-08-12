@@ -7837,6 +7837,44 @@ const testsTypescript = {
         },
       ],
     },
+    {
+      code: normalizeIndent`
+        function Foo() {
+          const bar = {};
+          const foo = bar;
+          useMemo(() => {
+            console.log(foo);
+          }, [foo]);
+        }
+      `,
+      errors: [
+        {
+          message:
+            "The 'foo' FIXME makes the dependencies of useMemo Hook (at line 6) change on every render. " +
+            "Move it inside the useMemo callback. Alternatively, wrap the construction of 'foo' in its own useMemo() Hook.",
+          suggestions: undefined,
+        },
+      ],
+    },
+    {
+      code: normalizeIndent`
+        function Foo({ someProp }) {
+          const bar = {};
+          const foo = someProp ?? bar;
+          useMemo(() => {
+            console.log(foo);
+          }, [foo]);
+        }
+      `,
+      errors: [
+        {
+          message:
+            "The 'foo' FIXME makes the dependencies of useMemo Hook (at line 6) change on every render. " +
+            "Move it inside the useMemo callback. Alternatively, wrap the construction of 'foo' in its own useMemo() Hook.",
+          suggestions: undefined,
+        },
+      ],
+    },
   ],
 };
 

@@ -1401,7 +1401,7 @@ function collectRecommendations({
 
 // If the node will result in constructing a referentially unique value, return
 // its human readable type name, else return null.
-function getConstructionExpresionType(node) {
+function getConstructionExpresionType(scope, node) {
   switch (node.type) {
     case 'ObjectExpression':
       return 'object';
@@ -1414,16 +1414,16 @@ function getConstructionExpresionType(node) {
       return 'class';
     case 'ConditionalExpression':
       if (
-        getConstructionExpresionType(node.consequent) != null ||
-        getConstructionExpresionType(node.alternate) != null
+        getConstructionExpresionType(scope, node.consequent) != null ||
+        getConstructionExpresionType(scope, node.alternate) != null
       ) {
         return 'conditional';
       }
       return null;
     case 'LogicalExpression':
       if (
-        getConstructionExpresionType(node.left) != null ||
-        getConstructionExpresionType(node.right) != null
+        getConstructionExpresionType(scope, node.left) != null ||
+        getConstructionExpresionType(scope, node.right) != null
       ) {
         return 'logical expression';
       }
@@ -1433,7 +1433,7 @@ function getConstructionExpresionType(node) {
     case 'JSXElement':
       return 'JSX element';
     case 'AssignmentExpression':
-      if (getConstructionExpresionType(node.right) != null) {
+      if (getConstructionExpresionType(scope, node.right) != null) {
         return 'assignment expression';
       }
       return null;
@@ -1445,9 +1445,66 @@ function getConstructionExpresionType(node) {
       }
       return null;
     case 'TypeCastExpression':
-      return getConstructionExpresionType(node.expression);
+      return getConstructionExpresionType(scope, node.expression);
     case 'TSAsExpression':
-      return getConstructionExpresionType(node.expression);
+      return getConstructionExpresionType(scope, node.expression);
+    case 'Identifier':
+      const bar = getFoo(scope, node.name);
+      if (bar == null) {
+        return null;
+      }
+      return 'FIXME';
+  }
+  return null;
+}
+
+function getFoo(scope, key) {
+  const ref = scope.variables.find(v => v.name === key);
+  if (ref == null) {
+    return null;
+  }
+
+  if (ref.references.some(r => !r.init && r.isWrite())) {
+    // The variable gets reassigned. This complicates things so we won't
+    // try to reason about it for now.
+    return null;
+  }
+
+  const node = ref.defs[0];
+  if (node == null) {
+    return null;
+  }
+
+  // const handleChange = function () {}
+  // const handleChange = () => {}
+  // const foo = {}
+  // const foo = []
+  // etc.
+  if (
+    node.type === 'Variable' &&
+    node.node.type === 'VariableDeclarator' &&
+    node.node.id.type === 'Identifier' && // Ensure this is not destructed assignment
+    node.node.init != null
+  ) {
+    const constantExpressionType = getConstructionExpresionType(
+      scope,
+      node.node.init,
+    );
+    if (constantExpressionType != null) {
+      return [ref, constantExpressionType];
+    }
+  }
+  // function handleChange() {}
+  if (
+    node.type === 'FunctionName' &&
+    node.node.type === 'FunctionDeclaration'
+  ) {
+    return [ref, 'function'];
+  }
+
+  // class Foo {}
+  if (node.type === 'ClassName' && node.node.type === 'ClassDeclaration') {
+    return [ref, 'class'];
   }
   return null;
 }
@@ -1461,54 +1518,7 @@ function scanForConstructions({
   scope,
 }) {
   const constructions = declaredDependencies
-    .map(({key}) => {
-      const ref = componentScope.variables.find(v => v.name === key);
-      if (ref == null) {
-        return null;
-      }
-
-      if (ref.references.some(r => !r.init && r.isWrite())) {
-        // The variable gets reassigned. This complicates things so we won't
-        // try to reason about it for now.
-        return null;
-      }
-
-      const node = ref.defs[0];
-      if (node == null) {
-        return null;
-      }
-      // const handleChange = function () {}
-      // const handleChange = () => {}
-      // const foo = {}
-      // const foo = []
-      // etc.
-      if (
-        node.type === 'Variable' &&
-        node.node.type === 'VariableDeclarator' &&
-        node.node.id.type === 'Identifier' && // Ensure this is not destructed assignment
-        node.node.init != null
-      ) {
-        const constantExpressionType = getConstructionExpresionType(
-          node.node.init,
-        );
-        if (constantExpressionType != null) {
-          return [ref, constantExpressionType];
-        }
-      }
-      // function handleChange() {}
-      if (
-        node.type === 'FunctionName' &&
-        node.node.type === 'FunctionDeclaration'
-      ) {
-        return [ref, 'function'];
-      }
-
-      // class Foo {}
-      if (node.type === 'ClassName' && node.node.type === 'ClassDeclaration') {
-        return [ref, 'class'];
-      }
-      return null;
-    })
+    .map(({key}) => getFoo(componentScope, key))
     .filter(Boolean);
 
   function isUsedOutsideOfHook(ref) {
