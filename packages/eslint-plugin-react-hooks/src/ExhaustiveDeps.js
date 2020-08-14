@@ -1474,6 +1474,21 @@ function scanForConstructions({
       if (node == null) {
         return null;
       }
+
+      // function(foo = []) {}
+      // function({foo = []}) {}
+      if (
+        node.type === 'Parameter' &&
+        node.name.parent.type === 'AssignmentPattern'
+      ) {
+        const constantExpressionType = getConstructionExpressionType(
+          node.name.parent.right,
+        );
+        if (constantExpressionType != null) {
+          return [ref, constantExpressionType];
+        }
+      }
+
       // const handleChange = function () {}
       // const handleChange = () => {}
       // const foo = {}

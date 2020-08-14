@@ -7518,6 +7518,42 @@ const tests = {
         },
       ],
     },
+    {
+      only: true,
+      code: normalizeIndent`
+        function Foo({foo = []}) {
+          useEffect(() => {
+            console.log(foo);
+          }, [foo]);
+        }
+      `,
+      errors: [
+        {
+          message:
+            "The 'foo' array makes the dependencies of useEffect Hook (at line 5) change on every render. " +
+            "Move it inside the useEffect callback. Alternatively, wrap the initialization of 'foo' in its own useMemo() Hook.",
+          suggestions: undefined,
+        },
+      ],
+    },
+    {
+      only: true,
+      code: normalizeIndent`
+        function useFoo(foo = []) {
+          useEffect(() => {
+            console.log(foo);
+          }, [foo]);
+        }
+      `,
+      errors: [
+        {
+          message:
+            "The 'foo' array makes the dependencies of useEffect Hook (at line 5) change on every render. " +
+            "Move it inside the useEffect callback. Alternatively, wrap the initialization of 'foo' in its own useMemo() Hook.",
+          suggestions: undefined,
+        },
+      ],
+    },
   ],
 };
 
