@@ -54,9 +54,11 @@ export {
   useRef,
   useState,
   useSyncExternalStore,
+  useStore,
   useTransition,
   useActionState,
   version,
+  createStore,
 } from './src/ReactClient';
 
 import {useOptimistic} from './src/ReactClient';

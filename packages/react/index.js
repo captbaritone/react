@@ -65,10 +65,12 @@ export {
   useMemo,
   useOptimistic,
   useSyncExternalStore,
+  useStore,
   useReducer,
   useRef,
   useState,
   useTransition,
   useActionState,
   version,
+  createStore,
 } from './src/ReactClient';

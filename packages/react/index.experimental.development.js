@@ -53,11 +53,13 @@ export {
   useRef,
   useState,
   useSyncExternalStore,
+  useStore,
   useTransition,
   useActionState,
   version,
   act, // DEV-only
   captureOwnerStack, // DEV-only
+  createStore,
 } from './src/ReactClient';
 
 import {useOptimistic} from './src/ReactClient';

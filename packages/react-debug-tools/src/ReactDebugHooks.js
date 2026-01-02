@@ -14,6 +14,7 @@ import type {
   Usable,
   Thenable,
   ReactDebugInfo,
+  ReactExternalDataSource,
 } from 'shared/ReactTypes';
 import type {
   ContextDependency,
@@ -481,6 +482,13 @@ function useSyncExternalStore<T>(
   return value;
 }
 
+function useStore<S, T>(
+  store: ReactExternalDataSource<S, mixed>,
+  selector?: (state: S) => T,
+): T {
+  throw new Error('useStore is not yet supported in React Debug Tools.');
+}
+
 function useTransition(): [
   boolean,
   (callback: () => void, options?: StartTransitionOptions) => void,
@@ -777,6 +785,7 @@ const Dispatcher: DispatcherType = {
   useDeferredValue,
   useTransition,
   useSyncExternalStore,
+  useStore,
   useId,
   useHostTransitionStatus,
   useFormState,

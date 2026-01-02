@@ -47,6 +47,7 @@ import {
   useLayoutEffect,
   useMemo,
   useSyncExternalStore,
+  useStore,
   useReducer,
   useRef,
   useState,
@@ -64,6 +65,8 @@ import {addTransitionType} from './ReactTransitionType';
 import {act} from './ReactAct';
 import {captureOwnerStack} from './ReactOwnerStack';
 import * as ReactCompilerRuntime from './ReactCompilerRuntime';
+
+import {createStore} from 'react-reconciler/src/ReactStore';
 
 const Children = {
   map,
@@ -96,6 +99,7 @@ export {
   useOptimistic,
   useActionState,
   useSyncExternalStore,
+  useStore,
   useReducer,
   useRef,
   useState,
@@ -134,4 +138,5 @@ export {
   useId,
   act,
   captureOwnerStack,
+  createStore,
 };

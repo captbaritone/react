@@ -3431,6 +3431,11 @@ function commitRoot(
 ): void {
   root.cancelPendingCommit = null;
 
+  // TODO: Where exactly should this live?
+  if (root.storeTracker !== null) {
+    root.storeTracker.commitFinished(lanes);
+  }
+
   do {
     // `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
     // means `flushPassiveEffects` will sometimes result in additional

@@ -18,6 +18,7 @@ import type {
   ReactComponentInfo,
   ReactDebugInfo,
   ReactKey,
+  ReactExternalDataSource,
 } from 'shared/ReactTypes';
 import type {TransitionTypes} from 'react/src/ReactTransitionType';
 import type {WorkTag} from './ReactWorkTags';
@@ -41,6 +42,7 @@ import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates';
 import type {ComponentStackNode} from 'react-server/src/ReactFizzComponentStack';
 import type {ThenableState} from './ReactFiberThenable';
 import type {ScheduledGesture} from './ReactFiberGestureScheduler';
+import type {StoreTracker} from './ReactFiberStoreTracking';
 
 // Unwind Circular: moved from ReactFiberHooks.old
 export type HookType =
@@ -59,6 +61,7 @@ export type HookType =
   | 'useDeferredValue'
   | 'useTransition'
   | 'useSyncExternalStore'
+  | 'useStore'
   | 'useId'
   | 'useCacheRefresh'
   | 'useOptimistic'
@@ -231,6 +234,8 @@ type BaseFiberRootProperties = {
   cancelPendingCommit: null | (() => void),
   // Top context object, used by renderSubtreeIntoContainer
   context: Object | null,
+
+  storeTracker: StoreTracker | null,
   pendingContext: Object | null,
 
   // Used to create a linked list that represent all the roots that have
@@ -438,6 +443,11 @@ export type Dispatcher = {
     getSnapshot: () => T,
     getServerSnapshot?: () => T,
   ): T,
+  // TODO: Non-nullable once `enableStore` is on everywhere.
+  useStore?: <S, T>(
+    store: ReactExternalDataSource<S, mixed>,
+    selector?: (state: S) => T,
+  ) => S | T,
   useId(): string,
   useCacheRefresh: () => <T>(?() => T, ?T) => void,
   useMemoCache: (size: number) => Array<any>,
